@@ -17,7 +17,7 @@ public class WorkThread implements Runnable {
 		this.entityPlayer = craftPlayer.getHandle();
 
 		try {
-			Thread.sleep(250);
+			Thread.sleep(500);
 		} catch (InterruptedException e) {
 			kill();
 		}
@@ -31,14 +31,14 @@ public class WorkThread implements Runnable {
 			if (entityPlayer == null
 					|| entityPlayer.activeContainer == entityPlayer.defaultContainer) {
 				kill();
+				break;
 			}
 			ContainerWorkbench containerBench = null;
 			try {
 				containerBench = (ContainerWorkbench) entityPlayer.activeContainer;
 			} catch (Exception ex) {
-				Cookbook.log
-						.info("[Cookbook]: Player is no longer using a workbench - expect an error.");
 				kill();
+				break;
 			}
 
 			ItemStack result = ((InventoryCraftResult) containerBench.b)

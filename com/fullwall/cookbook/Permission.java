@@ -1,8 +1,6 @@
 package com.fullwall.cookbook;
 
 import com.nijikokun.bukkit.Permissions.Permissions;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -18,11 +16,11 @@ public class Permission {
 			permissionsPlugin = (Permissions) test;
 			permissionsEnabled = true;
 		} else {
-			Logger log = Logger.getLogger("Minecraft");
-			log.log(Level.SEVERE,
-					"[Cookbook]: Nijikokuns' Permissions plugin isn't loaded, disabling plugin.");
-			Listen.plugin.getServer().getPluginManager()
-					.disablePlugin(Listen.plugin);
+			//Logger log = Logger.getLogger("Minecraft");
+			//log.log(Level.SEVERE,
+					//"[Cookbook]: Nijikokuns' Permissions plugin isn't loaded, disabling plugin.");
+			//Listen.plugin.getServer().getPluginManager()
+					//.disablePlugin(Listen.plugin);
 		}
 	}
 
