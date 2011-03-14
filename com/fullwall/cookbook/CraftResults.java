@@ -36,11 +36,19 @@ public class CraftResults {
 				int itemID = Cookbook.results.get(count)[0];
 				int amount = Cookbook.results.get(count)[1];
 				int damage = Cookbook.results.get(count)[2];
+
 				for (int i = 0; i < localRecipes.size(); ++i) {
 					int id = localRecipes.get(i);
+					int data = Cookbook.recipesData.get(count).get(i);
 					if (id == 0)
 						continue;
-					stackArray[i] = new ItemStack(id, 1, 0);
+					if (data == 0) {
+						if (id < 255) {
+							stackArray[i] = new ItemStack(Block.byId[id]);
+						} else
+							stackArray[i] = new ItemStack(Item.byId[id]);
+					} else
+						stackArray[i] = new ItemStack(id, 1, data);
 				}
 				ItemStack recipeResult = new ItemStack(itemID, amount, damage);
 				ShapedRecipes recipe = new ShapedRecipes(3, 3, stackArray,
@@ -56,21 +64,22 @@ public class CraftResults {
 	public void addShapelessRecipe(ArrayList<ArrayList<Integer>> myRecipes) {
 		int count = 0;
 		for (ArrayList<Integer> localRecipes : myRecipes) {
-			ArrayList<ItemStack> stuff = new ArrayList<ItemStack>();
+			ArrayList<ItemStack> adding = new ArrayList<ItemStack>();
 			int itemID = Cookbook.shapedResults.get(count)[0];
 			int amount = Cookbook.shapedResults.get(count)[1];
 			int damage = Cookbook.shapedResults.get(count)[2];
 
 			for (int j = 0; j < localRecipes.size(); ++j) {
 				int id = localRecipes.get(j);
+				int data = Cookbook.shapelessRecipesData.get(count).get(j);
 				if (id == 0)
 					continue;
-				net.minecraft.server.ItemStack item = new ItemStack(id, 1, 0);
-				stuff.add(item.j());
+				net.minecraft.server.ItemStack item = new ItemStack(id, 1, data);
+				adding.add(item.j());
 			}
 
 			ItemStack recipeResult = new ItemStack(itemID, amount, damage);
-			this.b.add(new ShapelessRecipes(recipeResult, stuff));
+			this.b.add(new ShapelessRecipes(recipeResult, adding));
 			count += 1;
 		}
 	}
@@ -166,7 +175,6 @@ public class CraftResults {
 				return craftingrecipe.b(inventorycrafting);
 			}
 		}
-
 		return null;
 	}
 }
