@@ -43,7 +43,11 @@ public class WorkThread implements Runnable {
 				.getContents()[0];
 		// ((ContainerWorkbench) ep.activeContainer).b.getContents()[0];
 		boolean a = false;
-		if (Cookbook.instance.getResult(containerBench.a) != null) {
+		if (containerBench.a != null
+				&& Cookbook.instance
+				.getResult
+				(containerBench.a) 
+				!= null) {
 			ItemStack checkResults = Cookbook.instance
 					.getResult(containerBench.a);
 			if (checkResults != null) {
@@ -65,8 +69,8 @@ public class WorkThread implements Runnable {
 
 	public void kill() {
 		plugin.getServer().getScheduler().cancelTask(id);
-		int index = Listen.tasks.indexOf(id);
+		int index = PlayerListen.tasks.indexOf(id);
 		if (index != -1)
-			Listen.tasks.remove(Listen.tasks.indexOf(id));
+			PlayerListen.tasks.remove(PlayerListen.tasks.indexOf(id));
 	}
 }

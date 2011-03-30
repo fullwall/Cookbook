@@ -65,7 +65,7 @@ public class FurnaceWorkThread implements Runnable {
 		ItemStack fuel = tileEntity.c_(1);
 		ItemStack result = tileEntity.c_(2);
 		if ((ingredient != null) && FurnaceRecipes.a().a(ingredient.id) != null) {
-			if (Cookbook.furnaceRecipes.contains(ingredient.id)
+			if (RecipeManager.containsIngredient(ingredient.id)
 					&& tileEntity.a > 0
 					&& (result == null || result.count != org.bukkit.Material
 							.getMaterial(result.id).getMaxStackSize())) {
@@ -78,8 +78,8 @@ public class FurnaceWorkThread implements Runnable {
 					if (result.count == maxStackSize)
 						return;
 				}
-				tileEntity.c += Cookbook.furnaceCooktimes
-						.get(Cookbook.furnaceRecipes.indexOf(ingredient.id));
+				tileEntity.c += RecipeManager
+						.getCooktimeFromIngredient(ingredient.id);
 				if (tileEntity.c > 200)
 					tileEntity.c = 199;
 			}
@@ -91,8 +91,8 @@ public class FurnaceWorkThread implements Runnable {
 
 	public void kill() {
 		plugin.getServer().getScheduler().cancelTask(id);
-		int index = Listen.tasks.indexOf(id);
+		int index = PlayerListen.tasks.indexOf(id);
 		if (index != -1)
-			Listen.tasks.remove(Listen.tasks.indexOf(id));
+			PlayerListen.tasks.remove(PlayerListen.tasks.indexOf(id));
 	}
 }
