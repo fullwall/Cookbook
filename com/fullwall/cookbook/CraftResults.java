@@ -18,8 +18,8 @@ public class CraftResults {
 	private List b = new ArrayList();
 
 	public static CraftResults getInstance() {
+		instance = new CraftResults();
 		for (Recipe r : Cookbook.recipeObjects) {
-			instance = new CraftResults();
 			instance.addRecipe(r);
 		}
 		return instance;
@@ -38,13 +38,8 @@ public class CraftResults {
 			}
 			ItemStack recipeResult = null;
 			if (myRecipe.getResult() != null) {
-				if (myRecipe.getResult().getData() != null)
-					recipeResult = new ItemStack(myRecipe.getResult()
-							.getTypeId(), myRecipe.getResult().getAmount(),
-							myRecipe.getResult().getData().getData());
-				else
-					recipeResult = new ItemStack(myRecipe.getResult()
-							.getTypeId(), myRecipe.getResult().getAmount(), 0);
+				recipeResult = new ItemStack(myRecipe.getResult().getTypeId(),
+						myRecipe.getResult().getAmount(), myRecipe.getData());
 			}
 			ShapedRecipes recipe = new ShapedRecipes(3, 3, stackArray,
 					recipeResult);
@@ -61,13 +56,8 @@ public class CraftResults {
 			}
 			ItemStack recipeResult = null;
 			if (myRecipe.getResult() != null) {
-				if (myRecipe.getResult().getData() != null)
-					recipeResult = new ItemStack(myRecipe.getResult()
-							.getTypeId(), myRecipe.getResult().getAmount(),
-							myRecipe.getResult().getData().getData());
-				else
-					recipeResult = new ItemStack(myRecipe.getResult()
-							.getTypeId(), myRecipe.getResult().getAmount(), 0);
+				recipeResult = new ItemStack(myRecipe.getResult().getTypeId(),
+						myRecipe.getResult().getAmount(), myRecipe.getData());
 			}
 			this.b.add(new ShapelessRecipes(recipeResult, adding));
 		}

@@ -42,29 +42,17 @@ public class WorkThread implements Runnable {
 		ItemStack result = ((InventoryCraftResult) containerBench.b)
 				.getContents()[0];
 		// ((ContainerWorkbench) ep.activeContainer).b.getContents()[0];
-		boolean a = false;
 		if (containerBench.a != null
-				&& Cookbook.instance
-				.getResult
-				(containerBench.a) 
-				!= null) {
-			ItemStack checkResults = Cookbook.instance
-					.getResult(containerBench.a);
-			if (checkResults != null) {
-				a = true;
-			}
-			if (a) {
-				ItemStack is = checkResults;
-				if (is.id == 0)
-					is = null;
-				result = is;
-				containerBench.b.a(0, is);
-				// ((InventoryCraftResult) containerBench.b);
-			}
+				&& Cookbook.instance.getResult(containerBench.a) != null) {
+			ItemStack is = Cookbook.instance.getResult(containerBench.a);
+			if (is.id == 0)
+				is = null;
+			result = is;
+			containerBench.b.a(0, is);
+			// ((InventoryCraftResult) containerBench.b);
 		}
 		if (!craftPlayer.isOnline())
 			kill();
-
 	}
 
 	public void kill() {

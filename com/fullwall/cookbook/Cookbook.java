@@ -52,8 +52,6 @@ public class Cookbook extends JavaPlugin {
 		populateRecipes();
 		populateFurnaceRecipes();
 		instance = CraftResults.getInstance();
-		if (instance == null)
-			log.info("A");
 		addFurnaceRecipe(furnaceRecipeObjects);
 		log.info("[" + pdfFile.getName() + "]: version ["
 				+ pdfFile.getVersion() + "] (" + codename + ") loaded");
@@ -121,7 +119,7 @@ public class Cookbook extends JavaPlugin {
 				str += "//";
 				str += recipe.getResult().getTypeId() + ",";
 				str += recipe.getResult().getAmount() + ",";
-				str += recipe.getResult().getData().getData() + ",";
+				str += recipe.getData() + ",";
 
 				str += "//";
 				for (int i = 0; i < recipe.getDataValues().size(); ++i) {
@@ -149,21 +147,24 @@ public class Cookbook extends JavaPlugin {
 
 	private void displayRecipe(CommandSender sender, String string,
 			String shapeless) {
-		Recipe recipe = recipeObjects.get(Integer.parseInt(string));
-		if (recipe == null) {
+		int index = Integer.parseInt(string) - 1;
+		if (index == -1 || index > recipeObjects.size() - 1) {
 			sender.sendMessage(ChatColor.RED + "That recipe does not exist.");
+			return;
 		}
+		Recipe recipe = recipeObjects.get(Integer.parseInt(string));
+
 		int localCount = 0;
 		if (recipe.getIDs().size() >= 1) {
 			String row = "";
 			int itemID, amount, data;
 			itemID = recipe.getResult().getTypeId();
 			amount = recipe.getResult().getAmount();
-			data = recipe.getResult().getData().getData();
+			data = recipe.getData();
 
 			for (int i = 0; i < recipe.getIDs().size(); i++) {
 				int id = recipe.getIDs().get(i);
-				int cdata = recipe.getResult().getData().getData();
+				int cdata = recipe.getData();
 				if (localCount != 2)
 					row += ChatColor.YELLOW + "" + id + ":" + cdata + "  ";
 				if (localCount == 2) {
@@ -199,11 +200,11 @@ public class Cookbook extends JavaPlugin {
 				int itemID, amount, data;
 				itemID = recipe.getResult().getTypeId();
 				amount = recipe.getResult().getAmount();
-				data = recipe.getResult().getData().getData();
+				data = recipe.getData();
 
 				for (int i = 0; i < recipe.getIDs().size(); i++) {
 					int id = recipe.getIDs().get(i);
-					int cdata = recipe.getResult().getData().getData();
+					int cdata = recipe.getData();
 					if (localCount != 2)
 						row += ChatColor.YELLOW + "" + id + ":" + cdata + "  ";
 					if (localCount == 2) {
@@ -231,15 +232,17 @@ public class Cookbook extends JavaPlugin {
 	}
 
 	private void displayFurnaceRecipe(CommandSender sender, String string) {
+		int index = Integer.parseInt(string) - 1;
+		if (index == -1 || index > recipeObjects.size() - 1) {
+			sender.sendMessage(ChatColor.RED + "That recipe does not exist.");
+			return;
+		}
 		FurnaceRecipe recipe = furnaceRecipeObjects.get(Integer
 				.parseInt(string));
-		if (recipe == null) {
-			sender.sendMessage(ChatColor.RED + "That recipe does not exist.");
-		}
 
 		int id = recipe.getIngredient();
 		int itemID = recipe.getResult().getTypeId();
-		int data = recipe.getResult().getData().getData();
+		int data = recipe.getData();
 		double cooktime = recipe.getCooktime();
 
 		sender.sendMessage(ChatColor.AQUA + "Cook one " + ChatColor.GREEN
@@ -260,7 +263,7 @@ public class Cookbook extends JavaPlugin {
 		for (FurnaceRecipe recipe : furnaceRecipeObjects) {
 			int id = recipe.getIngredient();
 			int itemID = recipe.getResult().getTypeId();
-			int data = recipe.getResult().getData().getData();
+			int data = recipe.getData();
 			double cooktime = recipe.getCooktime();
 
 			sender.sendMessage(ChatColor.AQUA + "Cook one " + ChatColor.GREEN
@@ -286,6 +289,7 @@ public class Cookbook extends JavaPlugin {
 			ArrayList<Integer> dataRecipeInProgress = new ArrayList<Integer>();
 			ArrayList<Integer> dataRecipeToAdd = new ArrayList<Integer>();
 			org.bukkit.inventory.ItemStack result = null;
+			int data = 0;
 			int i = 0;
 			boolean defaultShapeless = true;
 			boolean shapeless = false;
@@ -354,17 +358,19 @@ public class Cookbook extends JavaPlugin {
 					ItemStack stack = new ItemStack(Integer.parseInt(split[0]),
 							Integer.parseInt(split[1]),
 							Integer.parseInt(split[2]));
+					data = stack.damage;
 					if (stack != null && stack.id != 0)
 						result = new CraftItemStack(stack);
 				}
 				if (recipeToAdd != null && recipeToAdd.size() >= 1 && i == 3) {
 					recipeObjects.add(new Recipe(recipeToAdd, dataRecipeToAdd,
-							result, shapeless));
+							result, shapeless, data));
 					result = null;
 					dataRecipeToAdd = new ArrayList<Integer>();
 					dataRecipeInProgress = new ArrayList<Integer>();
 					recipeToAdd = new ArrayList<Integer>();
 					recipeInProgress = new ArrayList<Integer>();
+					data = 0;
 					if (!defaultShapeless)
 						shapeless = false;
 					i = -1;
@@ -419,7 +425,7 @@ public class Cookbook extends JavaPlugin {
 							result = new CraftItemStack(temp);
 					}
 					furnaceRecipeObjects.add(new FurnaceRecipe(ingredientID,
-							result, cooktime));
+							result, cooktime, resultData));
 					ingredientID = 1;
 					resultID = 1;
 					resultData = 0;
@@ -441,14 +447,10 @@ public class Cookbook extends JavaPlugin {
 		for (FurnaceRecipe fr : recipes) {
 			ItemStack result = null;
 			if (fr.getResult().getTypeId() != 0) {
-				if (fr.getResult().getData() != null)
-					result = new ItemStack(fr.getResult().getAmount(), 1, fr
-							.getResult().getData().getData());
-				else
-					result = new ItemStack(fr.getResult().getAmount(), 1, 0);
+				result = new ItemStack(fr.getResult().getTypeId(), 1,
+						fr.getData());
 			}
 			FurnaceRecipes.a().a(fr.getIngredient(), result);
-
 			count += 1;
 		}
 	}

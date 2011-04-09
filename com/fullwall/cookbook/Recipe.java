@@ -10,17 +10,23 @@ public class Recipe {
 	private ArrayList<Integer> dataValues;
 	private ItemStack result;
 	private boolean shapeless;
+	private int data;
 
 	public Recipe(ArrayList<Integer> recipe, ArrayList<Integer> dataValues,
-			ItemStack result, boolean shapeless) {
+			ItemStack result, boolean shapeless, int data) {
 		this.recipe = recipe;
 		this.dataValues = dataValues;
 		this.result = result;
 		this.shapeless = shapeless;
+		this.data = data;
 	}
 
 	public ItemStack getResult() {
 		return this.result;
+	}
+
+	public int getData() {
+		return this.data;
 	}
 
 	public void setResult(ItemStack result) {

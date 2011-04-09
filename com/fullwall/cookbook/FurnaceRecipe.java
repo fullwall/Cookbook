@@ -7,15 +7,22 @@ public class FurnaceRecipe {
 	private int ingredient;
 	private ItemStack result;
 	private double cooktime;
+	private int data;
 
-	public FurnaceRecipe(int ingredient, ItemStack result, double cooktime) {
+	public FurnaceRecipe(int ingredient, ItemStack result, double cooktime,
+			int data) {
 		this.ingredient = ingredient;
 		this.result = result;
 		this.cooktime = cooktime;
+		this.data = data;
 	}
 
 	public int getIngredient() {
 		return this.ingredient;
+	}
+
+	public int getData() {
+		return this.data;
 	}
 
 	public void setIngredient(int ingredient) {
