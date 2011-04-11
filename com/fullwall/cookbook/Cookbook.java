@@ -30,6 +30,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class Cookbook extends JavaPlugin {
 
 	public final PlayerListen pl = new PlayerListen(this);
+	// 1 more than the max data value attainable - marks an itemstack out for
+	// being able to be any data value in a recipe.
+	public static final int MAGIC_DATA = 1563;
 	private static final String codename = "Classy";
 	public static boolean verifyRecipes = false;
 	public static boolean displayClientCount = false;
@@ -38,7 +41,7 @@ public class Cookbook extends JavaPlugin {
 	public static ArrayList<FurnaceRecipe> furnaceRecipeObjects = new ArrayList<FurnaceRecipe>();
 
 	public static CraftResults instance;
-	public static int delay = 2;
+	public static int delay = 1;
 
 	public void onLoad() {
 	}
@@ -85,62 +88,60 @@ public class Cookbook extends JavaPlugin {
 				return true;
 			}
 			if (trimmed.length == 1 && trimmed[0].equals("recipes")) {
+				if (sender instanceof Player
+						&& !(Permission.generic((Player) sender,
+								"cookbook.display.allrecipes"))) {
+					sender.sendMessage(ChatColor.RED
+							+ "You don't have permission to use this command.");
+					return true;
+				}
 				displayRecipes(sender);
 				return true;
 			}
 			if (trimmed.length == 3 && trimmed[0].equals("recipe")) {
+				if (sender instanceof Player
+						&& !(Permission.generic((Player) sender,
+								"cookbook.display.recipe"))) {
+					sender.sendMessage(ChatColor.RED
+							+ "You don't have permission to use this command.");
+					return true;
+				}
 				displayRecipe(sender, trimmed[1], trimmed[2]);
 				return true;
 			}
 			if (trimmed.length == 2 && trimmed[0].equals("recipe")) {
+				if (sender instanceof Player
+						&& !(Permission.generic((Player) sender,
+								"cookbook.display.recipe"))) {
+					sender.sendMessage(ChatColor.RED
+							+ "You don't have permission to use this command.");
+					return true;
+				}
 				displayRecipe(sender, trimmed[1], "shaped");
 				return true;
 			}
 			if (trimmed.length == 1 && trimmed[0].equals("frecipes")) {
+				if (sender instanceof Player
+						&& !(Permission.generic((Player) sender,
+								"cookbook.display.allfurnacerecipes"))) {
+					sender.sendMessage(ChatColor.RED
+							+ "You don't have permission to use this command.");
+					return true;
+				}
 				displayFurnaceRecipes(sender);
 				return true;
 			}
 			if (trimmed.length == 2 && trimmed[0].equals("frecipe")) {
+				if (sender instanceof Player
+						&& !(Permission.generic((Player) sender,
+								"cookbook.display.furnacerecipe"))) {
+					sender.sendMessage(ChatColor.RED
+							+ "You don't have permission to use this command.");
+					return true;
+				}
 				displayFurnaceRecipe(sender, trimmed[1]);
 				return true;
 			}
-		} else if (command.getName().equals("retrieverecipes")
-				&& sender instanceof Player) {
-			int count = 0;
-			for (Recipe recipe : recipeObjects) {
-				String str = "";
-				if (recipe.isShapeless())
-					str = "񗉱//";
-				else
-					str = "񗝝//";
-				for (int i = 0; i < recipe.getIDs().size(); ++i) {
-					str += recipe.getIDs().get(i) + ",";
-				}
-				str += "//";
-				str += recipe.getResult().getTypeId() + ",";
-				str += recipe.getResult().getAmount() + ",";
-				str += recipe.getData() + ",";
-
-				str += "//";
-				for (int i = 0; i < recipe.getDataValues().size(); ++i) {
-					str += recipe.getDataValues().get(i) + ",";
-				}
-				((Player) sender).sendRawMessage(str);
-				str += "//";
-				count += 1;
-			}
-			if (displayClientCount) {
-				((Player) sender).sendRawMessage("񗱉");
-			}
-			if (verifyRecipes) {
-				((Player) sender).sendRawMessage("񘄵");
-			}
-			return true;
-		} else if (command.getName().equals("verifyrecipes")
-				&& sender instanceof Player) {
-			int count = 0;
-			count += recipeObjects.size();
-			((Player) sender).sendRawMessage("񘄶" + count);
 		}
 		return false;
 	}
@@ -148,12 +149,12 @@ public class Cookbook extends JavaPlugin {
 	private void displayRecipe(CommandSender sender, String string,
 			String shapeless) {
 		int index = Integer.parseInt(string) - 1;
-		if (index == -1 || index > recipeObjects.size() - 1) {
+		if (index == -1 || index >= recipeObjects.size()) {
 			sender.sendMessage(ChatColor.RED + "That recipe does not exist.");
 			return;
 		}
-		Recipe recipe = recipeObjects.get(Integer.parseInt(string));
-
+		Recipe recipe = recipeObjects.get(index);
+		sender.sendMessage(ChatColor.GOLD + "Recipe #" + index);
 		int localCount = 0;
 		if (recipe.getIDs().size() >= 1) {
 			String row = "";
@@ -164,7 +165,7 @@ public class Cookbook extends JavaPlugin {
 
 			for (int i = 0; i < recipe.getIDs().size(); i++) {
 				int id = recipe.getIDs().get(i);
-				int cdata = recipe.getData();
+				int cdata = recipe.getDataValues().get(localCount);
 				if (localCount != 2)
 					row += ChatColor.YELLOW + "" + id + ":" + cdata + "  ";
 				if (localCount == 2) {
@@ -204,7 +205,7 @@ public class Cookbook extends JavaPlugin {
 
 				for (int i = 0; i < recipe.getIDs().size(); i++) {
 					int id = recipe.getIDs().get(i);
-					int cdata = recipe.getData();
+					int cdata = recipe.getDataValues().get(localCount);
 					if (localCount != 2)
 						row += ChatColor.YELLOW + "" + id + ":" + cdata + "  ";
 					if (localCount == 2) {
@@ -225,6 +226,7 @@ public class Cookbook extends JavaPlugin {
 							+ ChatColor.GREEN
 							+ Material.matchMaterial("" + itemID)
 							+ ", data value " + data + ".");
+				sender.sendMessage("");
 			}
 			count += 1;
 		}
@@ -233,27 +235,26 @@ public class Cookbook extends JavaPlugin {
 
 	private void displayFurnaceRecipe(CommandSender sender, String string) {
 		int index = Integer.parseInt(string) - 1;
-		if (index == -1 || index > recipeObjects.size() - 1) {
+
+		if (index == -1 || index >= furnaceRecipeObjects.size()) {
 			sender.sendMessage(ChatColor.RED + "That recipe does not exist.");
 			return;
 		}
-		FurnaceRecipe recipe = furnaceRecipeObjects.get(Integer
-				.parseInt(string));
+		FurnaceRecipe recipe = furnaceRecipeObjects.get(index);
 
 		int id = recipe.getIngredient();
 		int itemID = recipe.getResult().getTypeId();
 		int data = recipe.getData();
 		double cooktime = recipe.getCooktime();
-
-		sender.sendMessage(ChatColor.AQUA + "Cook one " + ChatColor.GREEN
-				+ Material.matchMaterial("" + id) + ChatColor.AQUA
-				+ ". The cooktime will be changed by " + ChatColor.GREEN
-				+ cooktime + ChatColor.AQUA + ".");
-
-		sender.sendMessage(ChatColor.AQUA + "The result will be "
-				+ ChatColor.YELLOW + "1 " + ChatColor.GREEN
-				+ Material.matchMaterial("" + itemID) + ", data value "
-				+ ChatColor.GREEN + data);
+		sender.sendMessage(ChatColor.GOLD + "Furnace recipe #" + index);
+		sender.sendMessage(ChatColor.GREEN + "Cook one " + ChatColor.YELLOW
+				+ Material.matchMaterial("" + id) + ChatColor.GREEN
+				+ ". The cooktime will be changed by " + ChatColor.YELLOW
+				+ cooktime + ChatColor.GREEN + ".");
+		sender.sendMessage(ChatColor.GREEN + "The result will be "
+				+ ChatColor.YELLOW + "1 " + Material.matchMaterial("" + itemID)
+				+ ChatColor.GREEN + ", data value " + ChatColor.YELLOW + data
+				+ ChatColor.GREEN + ".");
 	}
 
 	private void displayFurnaceRecipes(CommandSender sender) {
@@ -266,15 +267,16 @@ public class Cookbook extends JavaPlugin {
 			int data = recipe.getData();
 			double cooktime = recipe.getCooktime();
 
-			sender.sendMessage(ChatColor.AQUA + "Cook one " + ChatColor.GREEN
-					+ Material.matchMaterial("" + id) + ChatColor.AQUA
-					+ ". The cooktime will be changed by " + ChatColor.GREEN
-					+ cooktime + ChatColor.AQUA + ".");
-
-			sender.sendMessage(ChatColor.AQUA + "The result will be "
-					+ ChatColor.YELLOW + "1 " + ChatColor.GREEN
-					+ Material.matchMaterial("" + itemID) + ", data value "
-					+ ChatColor.GREEN + data);
+			sender.sendMessage(ChatColor.GREEN + "Cook one " + ChatColor.YELLOW
+					+ Material.matchMaterial("" + id) + ChatColor.GREEN
+					+ ". The cooktime will be changed by " + ChatColor.YELLOW
+					+ cooktime + ChatColor.GREEN + ".");
+			sender.sendMessage(ChatColor.GREEN + "The result will be "
+					+ ChatColor.YELLOW + "1 "
+					+ Material.matchMaterial("" + itemID) + ChatColor.GREEN
+					+ ", data value " + ChatColor.YELLOW + data
+					+ ChatColor.GREEN + ".");
+			sender.sendMessage("");
 			count += 1;
 		}
 		sender.sendMessage(ChatColor.AQUA + "-------------------");
@@ -344,7 +346,10 @@ public class Cookbook extends JavaPlugin {
 					}
 					for (String str : splitkey[1].split(",")) {
 						str = str.trim();
-						dataRecipeInProgress.add(Integer.parseInt(str));
+						if (str.equals("X"))
+							dataRecipeInProgress.add(MAGIC_DATA);
+						else
+							dataRecipeInProgress.add(Integer.parseInt(str));
 					}
 					if (i == 2) {
 						recipeToAdd = recipeInProgress;

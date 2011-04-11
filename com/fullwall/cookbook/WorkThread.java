@@ -2,8 +2,8 @@ package com.fullwall.cookbook;
 
 import net.minecraft.server.ContainerWorkbench;
 import net.minecraft.server.EntityPlayer;
-import net.minecraft.server.InventoryCraftResult;
 import net.minecraft.server.ItemStack;
+import net.minecraft.server.Packet103SetSlot;
 
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
@@ -24,35 +24,39 @@ public class WorkThread implements Runnable {
 		this.id = id;
 	}
 
-	@SuppressWarnings("unused")
 	@Override
 	public void run() {
-		if (entityPlayer == null
-				|| entityPlayer.activeContainer == entityPlayer.defaultContainer) {
-			kill();
-			return;
-		}
-		ContainerWorkbench containerBench = null;
 		try {
-			containerBench = (ContainerWorkbench) entityPlayer.activeContainer;
+			if (entityPlayer == null
+					|| entityPlayer.activeContainer == entityPlayer.defaultContainer) {
+				kill();
+				return;
+			}
+			ContainerWorkbench containerBench = null;
+			try {
+				containerBench = (ContainerWorkbench) entityPlayer.activeContainer;
+			} catch (Exception ex) {
+				kill();
+				return;
+			}
+			if (containerBench.a != null
+					&& Cookbook.instance.getResult(containerBench.a) != null) {
+				ItemStack is = Cookbook.instance.getResult(containerBench.a);
+				if (is.id == 0)
+					is = null;
+				containerBench.b.a(0, is);
+				Packet103SetSlot packet = new Packet103SetSlot(
+						entityPlayer.activeContainer.f, 0, is);
+				entityPlayer.a.b(packet);
+			}
+			if (!craftPlayer.isOnline())
+				kill();
 		} catch (Exception ex) {
-			kill();
+			Cookbook.log.info("[Cookbook]: Error in workbench task. Error is: "
+					+ ex.getMessage() + ". Stack trace: "
+					+ ex.getStackTrace()[0]);
 			return;
 		}
-		ItemStack result = ((InventoryCraftResult) containerBench.b)
-				.getContents()[0];
-		// ((ContainerWorkbench) ep.activeContainer).b.getContents()[0];
-		if (containerBench.a != null
-				&& Cookbook.instance.getResult(containerBench.a) != null) {
-			ItemStack is = Cookbook.instance.getResult(containerBench.a);
-			if (is.id == 0)
-				is = null;
-			result = is;
-			containerBench.b.a(0, is);
-			// ((InventoryCraftResult) containerBench.b);
-		}
-		if (!craftPlayer.isOnline())
-			kill();
 	}
 
 	public void kill() {

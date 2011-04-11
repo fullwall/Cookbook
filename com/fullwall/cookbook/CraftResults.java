@@ -1,7 +1,9 @@
 package com.fullwall.cookbook;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import net.minecraft.server.Block;
@@ -150,10 +152,120 @@ public class CraftResults {
 	public ItemStack getResult(InventoryCrafting inventorycrafting) {
 		for (int i = 0; i < this.b.size(); ++i) {
 			CraftingRecipe craftingrecipe = (CraftingRecipe) this.b.get(i);
-			if (craftingrecipe.a(inventorycrafting)) {
+			if (craftingrecipe.a(inventorycrafting)
+					|| checkRecipes(craftingrecipe, inventorycrafting)) {
 				return craftingrecipe.b(inventorycrafting);
 			}
 		}
 		return null;
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private boolean checkRecipes(CraftingRecipe craftingrecipe,
+			InventoryCrafting inventorycrafting) {
+		try {
+			if (craftingrecipe.a() < 9) {
+				Field privateList;
+				privateList = ShapelessRecipes.class.getDeclaredField("b");
+				privateList.setAccessible(true);
+				List list;
+				list = (List) privateList.get(craftingrecipe);
+				ArrayList arraylist = new ArrayList(list);
+				int i = 0;
+				do {
+					if (i >= 3) {
+						break;
+					}
+					for (int j = 0; j < 3; j++) {
+						ItemStack itemstack = inventorycrafting.b(j, i);
+						if (itemstack == null) {
+							continue;
+						}
+						boolean flag = false;
+						Iterator iterator = arraylist.iterator();
+						do {
+							if (!iterator.hasNext()) {
+								break;
+							}
+							ItemStack recipeStack = (ItemStack) iterator.next();
+							if (itemstack.id != recipeStack.id
+									|| recipeStack.damage != -1
+									&& (itemstack.damage != recipeStack.damage && recipeStack.damage != Cookbook.MAGIC_DATA)) {
+								continue;
+							}
+
+							flag = true;
+							arraylist.remove(recipeStack);
+							break;
+						} while (true);
+						if (!flag) {
+							return false;
+						}
+					}
+					i++;
+				} while (true);
+				return arraylist.isEmpty();
+			} else if (craftingrecipe.a() == 9) {
+				Field privateItemStacks;
+				privateItemStacks = ShapedRecipes.class.getDeclaredField("d");
+				privateItemStacks.setAccessible(true);
+				ItemStack[] stacks;
+				stacks = (ItemStack[]) privateItemStacks.get(craftingrecipe);
+				for (int i = 0; i <= 3; i++) {
+					for (int j = 0; j <= 3; j++) {
+						if (checkShaped(inventorycrafting, i, j, true, stacks)) {
+							return true;
+						}
+						if (checkShaped(inventorycrafting, i, j, false, stacks)) {
+							return true;
+						}
+					}
+				}
+				return false;
+			}
+			return false;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return false;
+		}
+	}
+
+	private boolean checkShaped(InventoryCrafting inventorycrafting, int i,
+			int j, boolean flag, ItemStack[] stacks) {
+		int nullCount = 0;
+		for (int k = 0; k < 3; k++) {
+			for (int l = 0; l < 3; l++) {
+				int i1 = k - i;
+				int j1 = l - j;
+				ItemStack recipeStack = null;
+				if (i1 >= 0 && j1 >= 0 && i1 < 3 && j1 < 3) {
+					if (flag) {
+						recipeStack = stacks[(3 - i1 - 1) + j1 * 3];
+					} else {
+						recipeStack = stacks[i1 + j1 * 3];
+					}
+				}
+				ItemStack inventoryStack = inventorycrafting.b(k, l);
+				if (inventoryStack == null && recipeStack == null) {
+					nullCount += 1;
+					continue;
+				}
+				if (inventoryStack == null && recipeStack != null
+						|| inventoryStack != null && recipeStack == null) {
+					return false;
+				}
+				if (recipeStack.id != inventoryStack.id) {
+					return false;
+				}
+				if (recipeStack.damage != -1
+						&& recipeStack.damage != inventoryStack.damage
+						&& recipeStack.damage != Cookbook.MAGIC_DATA) {
+					return false;
+				}
+			}
+		}
+		if (nullCount == 9)
+			return false;
+		return true;
 	}
 }
