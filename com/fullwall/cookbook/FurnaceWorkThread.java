@@ -32,7 +32,8 @@ public class FurnaceWorkThread implements Runnable {
 	@Override
 	public void run() {
 		if (entityPlayer == null
-				|| entityPlayer.activeContainer == entityPlayer.defaultContainer) {
+				|| entityPlayer.activeContainer == entityPlayer.defaultContainer
+				|| !(entityPlayer.activeContainer instanceof ContainerFurnace)) {
 			kill();
 			return;
 		}
@@ -53,7 +54,6 @@ public class FurnaceWorkThread implements Runnable {
 		}
 		privateTileEntity.setAccessible(true);
 		TileEntityFurnace tileEntity;
-
 		try {
 			tileEntity = (TileEntityFurnace) privateTileEntity.get(furnace);
 		} catch (Exception ex) {
@@ -61,12 +61,12 @@ public class FurnaceWorkThread implements Runnable {
 			return;
 		}
 
-		ItemStack ingredient = tileEntity.c_(0);
-		ItemStack fuel = tileEntity.c_(1);
-		ItemStack result = tileEntity.c_(2);
+		ItemStack ingredient = tileEntity.getItem(0);
+		ItemStack fuel = tileEntity.getItem(1);
+		ItemStack result = tileEntity.getItem(2);
 		if ((ingredient != null) && FurnaceRecipes.a().a(ingredient.id) != null) {
 			if (RecipeManager.containsIngredient(ingredient.id)
-					&& tileEntity.a > 0
+					&& tileEntity.burnTime > 0
 					&& (result == null || result.count != org.bukkit.Material
 							.getMaterial(result.id).getMaxStackSize())) {
 				if (result != null) {
@@ -78,10 +78,10 @@ public class FurnaceWorkThread implements Runnable {
 					if (result.count == maxStackSize)
 						return;
 				}
-				tileEntity.c += RecipeManager
+				tileEntity.cookTime += RecipeManager
 						.getCooktimeFromIngredient(ingredient.id);
-				if (tileEntity.c > 200)
-					tileEntity.c = 199;
+				if (tileEntity.cookTime > 200)
+					tileEntity.cookTime = 199;
 			}
 		}
 

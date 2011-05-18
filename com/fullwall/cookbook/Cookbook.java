@@ -32,7 +32,7 @@ public class Cookbook extends JavaPlugin {
 	public final PlayerListen pl = new PlayerListen(this);
 	// 1 more than the max data value attainable - marks an itemstack out for
 	// being able to be any data value in a recipe.
-	public static final int MAGIC_DATA = 1563;
+	public static final int MAGIC_DATA = -1;
 	private static final String codename = "Classy";
 	public static boolean verifyRecipes = false;
 	public static boolean displayClientCount = false;
@@ -283,6 +283,7 @@ public class Cookbook extends JavaPlugin {
 	}
 
 	public void populateRecipes() {
+		int recipecount = 0;
 		try {
 			File file = new File("plugins/Cookbook/Cookbook.recipes");
 			Scanner scan = new Scanner(file);
@@ -376,6 +377,7 @@ public class Cookbook extends JavaPlugin {
 					recipeToAdd = new ArrayList<Integer>();
 					recipeInProgress = new ArrayList<Integer>();
 					data = 0;
+					recipecount += 1;
 					if (!defaultShapeless)
 						shapeless = false;
 					i = -1;
@@ -384,11 +386,15 @@ public class Cookbook extends JavaPlugin {
 			}
 
 		} catch (FileNotFoundException e) {
-			log.log(Level.SEVERE, "[Cookbook]: Cannot find recipes file.");
+			log.info("[Cookbook]: Cannot find recipes file.");
+		} catch (Exception ex) {
+			log.info("[Cookbook]: Invalid workbench recipe. Recipe number "
+					+ recipecount + " is incorrect.");
 		}
 	}
 
 	private void populateFurnaceRecipes() {
+		int recipecount = 0;
 		try {
 			File file = new File("plugins/Cookbook/Cookbook.furnacerecipes");
 			Scanner scan = new Scanner(file);
@@ -423,6 +429,7 @@ public class Cookbook extends JavaPlugin {
 				}
 				if (i == 1) {
 					// next recipe
+					recipecount += 1;
 					org.bukkit.inventory.ItemStack result = null;
 					if (resultID != 0) {
 						ItemStack temp = new ItemStack(resultID, 1, resultData);
@@ -444,6 +451,9 @@ public class Cookbook extends JavaPlugin {
 		} catch (FileNotFoundException e) {
 			log.log(Level.SEVERE,
 					"[Cookbook]: Cannot find furnace recipes file.");
+		} catch (Exception ex) {
+			log.info("[Cookbook]: Invalid furnace recipe. Recipe number "
+					+ recipecount + " is incorrect.");
 		}
 	}
 

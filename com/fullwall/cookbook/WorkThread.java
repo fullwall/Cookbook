@@ -44,17 +44,17 @@ public class WorkThread implements Runnable {
 				ItemStack is = Cookbook.instance.getResult(containerBench.a);
 				if (is.id == 0)
 					is = null;
-				containerBench.b.a(0, is);
+				containerBench.b.setItem(0, is);
 				Packet103SetSlot packet = new Packet103SetSlot(
 						entityPlayer.activeContainer.f, 0, is);
-				entityPlayer.a.b(packet);
+				entityPlayer.netServerHandler.sendPacket(packet);
 			}
 			if (!craftPlayer.isOnline())
 				kill();
 		} catch (Exception ex) {
-			Cookbook.log.info("[Cookbook]: Error in workbench task. Error is: "
-					+ ex.getMessage() + ". Stack trace: "
-					+ ex.getStackTrace()[0]);
+			Cookbook.log
+					.info("[Cookbook]: Error in workbench task. Stack trace incoming.");
+			ex.printStackTrace();
 			return;
 		}
 	}
